@@ -2,7 +2,7 @@
 nseed=10
 
 domains=("recipe" "roc_stories" "tm2" "tickettalk" "wikihow" "wikisection")
-path2repo="path/2/repo"
+path2repo="/scratch/ss14412/MLProj/language_modeling_via_stochastic_processes/language_modeling_via_stochastic_processes"
 
 for domain in ${domains[@]}; do
     for seed in $(seq 1 1 $nseed); do

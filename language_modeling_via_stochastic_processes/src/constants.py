@@ -1,7 +1,7 @@
 import os
 
-REPO_PATH='path/2/language_modeling_via_stochastic_processes' # CHANGE ME! 
-PATH2HUGGINGFACE='path/2/huggingface' # CHANGE ME! 
+REPO_PATH='/scratch/ss14412/MLProj/language_modeling_via_stochastic_processes' # CHANGE ME! 
+PATH2HUGGINGFACE='/scratch/ss14412/.cache/huggingface' # CHANGE ME! 
 
 ##################################################
 ###### The rest doesn't need to be changed! ###### 

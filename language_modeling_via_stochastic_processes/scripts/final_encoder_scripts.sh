@@ -9,7 +9,7 @@ Dataset: wikisection, wikihow, recipe, roc_stories, tm2, ticketalk
 dims=(8 16 32)
 losses=('brownian_bridge' 'brownian' 'vae' 'infonce')
 datasets=('wikisection' 'wikihow' 'recipe' 'roc_stories' 'tm2' 'tickettalk')
-path2repo='path/2/repo'
+path2repo='/scratch/ss14412/MLProj/language_modeling_via_stochastic_processes/language_modeling_via_stochastic_processes'
 
 for dim in ${dims[@]}; do
     for loss in ${losses[@]}; do
