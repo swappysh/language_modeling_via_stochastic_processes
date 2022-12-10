@@ -13,7 +13,8 @@ from language_modeling_via_stochastic_processes.src.datasets import (
     wikihow,
     tm2,
     tickettalk,
-    roc_stories
+    roc_stories,
+    codeparrot
 )
 
 import datasets
@@ -25,6 +26,7 @@ NAME2DATASET = {
     'roc_stories': roc_stories.ROCStoriesTriplet,
     'tm2': tm2.TM2Triplet,
     'tickettalk': tickettalk.TicketTalkTriplet,
+    'code_parrot': codeparrot.CodeParrotTriplet
 }
 
 from language_modeling_via_stochastic_processes.src.models import language
