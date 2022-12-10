@@ -36,17 +36,9 @@ class CodeParrotTriplet(encoder.BaseDataset):
         self.data = load_from_disk(self.filepath)
 
     def _set_section_names(self):
-        self.section_names = ['question', 'solution', 'break_statement', 'class_statement', 'continue_statement',
-                              'def_statement',
-                              'elif_statement', 'else_statement', 'expression_statement', 'for_statement',
-                              'if_statement', 'import_statement', 'return_statement', 'while_statement']
-        self.map = {"if": "if_statement", 'break': 'break_statement',
-                    'class': 'class_statement', "continue": 'continue_statement',
-                    'def': "def_statement", 'elif': 'elif_statement', 'else': 'else_statement',
-                    'expression': 'expression_statement', 'for': 'for_statement',
-                    'import': 'import_statement', 'return': 'return_statement',
-                    'while': 'while_statement'}
-        # duplicates --> if, if_statement
+        self.section_names = ['question', 'solution', 'class_statement', 'def_statement', 'import_statement']
+        self.map = {'class': 'class_statement', 'def': "def_statement",
+                    'import': 'import_statement'}
         self.section_ids = ['[ {} ]'.format(name.upper()) for name in self.section_names]
 
     def _process_data(self):
@@ -71,10 +63,11 @@ class CodeParrotTriplet(encoder.BaseDataset):
                     section_map = line[0]
                     if line[0] in self.map:
                         section_map = self.map[line[0]]
-                    if section_map not in self.section_names:
-                        break
-                    section_id = self.section_names.index(section_map)
-                    text += [self.section_ids[section_id] + " " + line[1] + " . "]
+                    if section_map in self.section_names:
+                        section_id = self.section_names.index(section_map)
+                        text += [self.section_ids[section_id] + " " + line[1] + " . "]
+                    else:
+                        text += [line[1] + " . "]
                 all_sentences += text
 
                 for sentence in all_sentences:
