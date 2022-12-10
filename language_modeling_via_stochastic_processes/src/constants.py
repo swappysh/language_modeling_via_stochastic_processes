@@ -1,20 +1,21 @@
 import os
 
-REPO_PATH='/scratch/ss14412/MLProj/language_modeling_via_stochastic_processes' # CHANGE ME! 
-PATH2HUGGINGFACE='/scratch/ss14412/.cache/huggingface' # CHANGE ME! 
+REPO_PATH = '/scratch/ss14412/MLProj/language_modeling_via_stochastic_processes'  # CHANGE ME!
+PATH2HUGGINGFACE = '/scratch/ss14412/.cache/huggingface'  # CHANGE ME!
 
 ##################################################
 ###### The rest doesn't need to be changed! ###### 
 ##################################################
 
-DATA_PATH=os.path.join(REPO_PATH, 'data')
-PATH2TRANSFORMERS=os.path.join(REPO_PATH, 'language_modeling_via_stochastic_processes/transformers')
-PATH2RECIPENLG=os.path.join(DATA_PATH, 'recipe_nlg')
-PATH2WIKISECTION=os.path.join(DATA_PATH, 'wikisection')
-PATH2WIKIHOW=os.path.join(DATA_PATH, 'wikihow', 'wiki_how_data.pkl')
-PATH2TICKETTALK=os.path.join(DATA_PATH,'tickettalk')
-PATH2TM2=os.path.join(DATA_PATH,'tm2')
-PATH2ROCSTORIES=os.path.join(DATA_PATH,'roc_stories')
+DATA_PATH = os.path.join(REPO_PATH, 'data')
+PATH2TRANSFORMERS = os.path.join(REPO_PATH, 'language_modeling_via_stochastic_processes/transformers')
+PATH2RECIPENLG = os.path.join(DATA_PATH, 'recipe_nlg')
+PATH2WIKISECTION = os.path.join(DATA_PATH, 'wikisection')
+PATH2WIKIHOW = os.path.join(DATA_PATH, 'wikihow', 'wiki_how_data.pkl')
+PATH2TICKETTALK = os.path.join(DATA_PATH, 'tickettalk')
+PATH2TM2 = os.path.join(DATA_PATH, 'tm2')
+PATH2ROCSTORIES = os.path.join(DATA_PATH, 'roc_stories')
+PATH2CODEPARROT = os.path.join(DATA_PATH, 'code_parrot')
 
 VISUALIZATION_DIR = os.path.join(
     REPO_PATH,
