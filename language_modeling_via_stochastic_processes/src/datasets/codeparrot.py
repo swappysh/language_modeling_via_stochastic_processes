@@ -68,12 +68,12 @@ class CodeParrotTriplet(encoder.BaseDataset):
                 text = question
                 text += [f"{self.section_ids[1]} {solution_id}" + " . "]
                 for line in solution:
-                    section_map = self.map[line[0]]
-                    if section_map is None:
-                        section_map = line[0]
-                    section_id = self.section_names.index(section_map)
-                    if section_id is None:
+                    section_map = line[0]
+                    if line[0] in self.map:
+                        section_map = self.map[line[0]]
+                    if section_map not in self.section_names:
                         break
+                    section_id = self.section_names.index(section_map)
                     text += [self.section_ids[section_id] + " " + line[1] + " . "]
                 all_sentences += text
 
