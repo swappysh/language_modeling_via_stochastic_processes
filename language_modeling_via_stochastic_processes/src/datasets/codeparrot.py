@@ -58,7 +58,7 @@ class CodeParrotTriplet(encoder.BaseDataset):
             question = self.data[doc_id]['question'].replace(".\n", ". ").split(self.split_pattern)[:-1]
             if len(question) == 0:
                 question = [self.data[doc_id]['question']]
-            question[0] = [self.section_ids[0] + " " + question[0]]
+            question[0] = self.section_ids[0] + " " + question[0]
             question = [_ + ' . ' for _ in question]
 
             solutions = self.data[doc_id]['labelled_solutions']
