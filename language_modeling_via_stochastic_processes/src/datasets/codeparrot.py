@@ -55,10 +55,9 @@ class CodeParrotTriplet(encoder.BaseDataset):
 
             solutions = self.data[doc_id]['labelled_solutions']
 
-            all_sentences = []
+            all_sentences = question
             for solution_id, solution in enumerate(solutions):
-                text = question
-                text += [f"{self.section_ids[1]} {solution_id}" + " . "]
+                text = [f"{self.section_ids[1]} {solution_id}" + " . "]
                 for line in solution:
                     section_map = line[0]
                     if line[0] in self.map:
