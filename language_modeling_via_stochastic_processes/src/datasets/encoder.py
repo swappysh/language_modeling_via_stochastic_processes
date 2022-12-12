@@ -1,6 +1,7 @@
 import json
 import torch
 import torch.utils.data as data
+from tqdm import tqdm
 from transformers import GPT2Tokenizer, BertTokenizer, AlbertTokenizer
 
 
@@ -38,7 +39,7 @@ class BaseDataset(data.Dataset):
 
     def _process_data(self):
         self.processed_data = []
-        for doc_id in range(len(self.data)):
+        for doc_id in tqdm(range(len(self.data))):
             doc_info = []
             sentence_counter = 0
             for section_id, section_name in enumerate(self.section_names):
@@ -85,6 +86,7 @@ class BaseDataset(data.Dataset):
             self.processed_data += doc_info
 
         # print examples
+        print("Length of Processed data: {}".format(len(self.processed_data)))
         print("Examples: {}".format(self.processed_data[0]))
         print("Examples: {}".format(self.processed_data[10]))
 

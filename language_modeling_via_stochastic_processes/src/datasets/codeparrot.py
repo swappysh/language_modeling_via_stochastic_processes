@@ -1,5 +1,6 @@
 import os
 import random
+from tqdm import tqdm
 
 from datasets import load_from_disk
 
@@ -43,7 +44,7 @@ class CodeParrotTriplet(encoder.BaseDataset):
 
     def _process_data(self):
         self.processed_data = []
-        for doc_id in range(len(self.data)):
+        for doc_id in tqdm(range(len(self.data))):
             doc_info = []
             sentence_counter = 0
 
@@ -88,6 +89,7 @@ class CodeParrotTriplet(encoder.BaseDataset):
 
                 self.processed_data += doc_info
 
+        print("Length of Processed data: {}".format(len(self.processed_data)))
         print("Example: ", self.processed_data[0])
         print("Example: ", self.processed_data[10])
 
