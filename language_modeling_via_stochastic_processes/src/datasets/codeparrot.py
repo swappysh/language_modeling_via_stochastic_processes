@@ -44,6 +44,7 @@ class CodeParrotTriplet(encoder.BaseDataset):
 
     def _process_data(self):
         self.processed_data = []
+        print("data length: {}".format(len(self.data)))
         for doc_id in tqdm(range(len(self.data))):
             doc_info = []
             sentence_counter = 0
@@ -88,6 +89,7 @@ class CodeParrotTriplet(encoder.BaseDataset):
                     info['total_doc_sentences'] = sentence_counter
 
                 self.processed_data += doc_info
+                break
 
         print("Length of Processed data: {}".format(len(self.processed_data)))
         print("Example: ", self.processed_data[0])

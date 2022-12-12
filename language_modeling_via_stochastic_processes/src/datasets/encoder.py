@@ -39,6 +39,7 @@ class BaseDataset(data.Dataset):
 
     def _process_data(self):
         self.processed_data = []
+        print("data length: {}".format(len(self.data)))
         for doc_id in tqdm(range(len(self.data))):
             doc_info = []
             sentence_counter = 0
