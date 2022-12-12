@@ -2,7 +2,7 @@ import json
 import torch
 import torch.utils.data as data
 from tqdm import tqdm
-from transformers import GPT2Tokenizer, BertTokenizer, AlbertTokenizer
+from transformers import GPT2Tokenizer, BertTokenizer, AlbertTokenizer, AutoTokenizer
 
 
 class BaseDataset(data.Dataset):
@@ -102,7 +102,8 @@ class BaseDataset(data.Dataset):
 
     def _set_tokenizer(self):
         if self.tokenizer_name == "GPT2":
-            self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+            #self.tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
+            self.tokenizer = AutoTokenizer.from_pretrained('codeparrot/codeparrot')
             self.tokenizer.pad_token = self.tokenizer.eos_token
             self.end_token = self.tokenizer.eos_token_id
             self.max_length = 1024
