@@ -22,7 +22,9 @@ class GPT2OUEncoder(nn.Module):
         # turn off all the gradients
         for param in self.model.parameters():
             param.requires_grad = self.finetune
-        self.mlp = nn.Linear(self.model.transformer.wte.embedding_dim, self.hidden_dim)
+        # TODO: reason why this is correct
+        # self.mlp = nn.Linear(self.model.transformer.wte.embedding_dim, self.hidden_dim)
+        self.mlp = nn.Linear(32774, self.hidden_dim)
         self.feature_extractor = self.create_feature_extractor() # data_dim -> hidden_dim
         self.log_q = self.create_log_q()
         self.C_eta = nn.Linear(1, 1)
