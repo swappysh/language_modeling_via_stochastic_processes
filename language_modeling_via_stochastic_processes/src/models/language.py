@@ -3,6 +3,7 @@ import torch
 import torch.nn as nn
 from transformers import GPT2Model
 from transformers import BertModel
+from transformers import AutoModelWithLMHead
 
 from language_modeling_via_stochastic_processes.src.models.utils import weights_init
 
@@ -15,7 +16,8 @@ class GPT2OUEncoder(nn.Module):
         self._init_model()
 
     def _init_model(self):
-        self.model = GPT2Model.from_pretrained('gpt2')
+        #self.model = GPT2Model.from_pretrained('gpt2')
+        self.model = AutoModelWithLMHead.from_pretrained("codeparrot/codeparrot")
         self.model = self.model.eval()
         # turn off all the gradients
         for param in self.model.parameters():
