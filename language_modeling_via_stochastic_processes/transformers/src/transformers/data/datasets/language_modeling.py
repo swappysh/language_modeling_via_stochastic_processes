@@ -1512,8 +1512,8 @@ class CodeParrotDataset(TextDataset):
                     self.examples.append(example)
                     self.cl_texts.append(gpt2_text)
                     section_ids, _ = self.determine_section_ids(tokenized_text, last_section_id=None)
-                    self.lengths['per [ STEP ]'].append(
-                        self.lengths['[ STEP ]'][-1] / (tokenized_text.count(50259)))
+                    # self.lengths['per [ STEP ]'].append(
+                    #     self.lengths['[ STEP ]'][-1] / (tokenized_text.count(50259)))
                     self.get_cl_embeddings(tokenized_example=example, raw_text=gpt2_text, cl_text=gpt2_list,
                                            gpt2_text=row)
 
