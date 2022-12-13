@@ -1465,7 +1465,7 @@ class CodeParrotDataset(TextDataset):
             self.start_idx, self.end_idx = 40_000, 40_100
 
     def process_dataset(self):
-        self.data = load_from_disk(self.file_path)
+        self.data = load_from_disk('/'.join(self.file_path.split('/')[:-2]) + '/code_parrot/train/')
 
         num_filtered = 0
 
