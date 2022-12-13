@@ -1449,7 +1449,7 @@ class CodeParrotDataset(TextDataset):
         self.section_tokens = [tok[0] for tok in section_tokens]
         self.cl_eos_id = self.tokenizer(self.cl_eos_str)['input_ids'][0]
         print(f"self.cl_eos_id: {self.cl_eos_id}")
-        assert self.cl_eos_id > 50000  # just checking its a new token
+        # assert self.cl_eos_id > 50000  # just checking its a new token
 
         self.set_cl_tokenizer()
         start = time.time()
