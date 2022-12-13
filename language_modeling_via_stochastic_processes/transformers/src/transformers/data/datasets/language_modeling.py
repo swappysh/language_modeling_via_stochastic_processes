@@ -1503,8 +1503,8 @@ class CodeParrotDataset(TextDataset):
                 all_sentences += text
 
                 # removing any empty sentences
-                gpt2_list = [s for s in all_sentences if s]
-                gpt2_text = "".join(gpt2_list)[:self.block_size]
+                gpt2_list = [s for s in all_sentences if s][:self.block_size]
+                gpt2_text = "".join(gpt2_list)
 
                 row = f"{self.tokenizer.bos_token} {gpt2_text} {self.tokenizer.eos_token}"
                 tokenized_text = self.tokenizer.convert_tokens_to_ids(
