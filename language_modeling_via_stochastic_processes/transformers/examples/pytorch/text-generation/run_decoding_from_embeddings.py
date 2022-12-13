@@ -198,6 +198,7 @@ def main():
     except KeyError:
         raise KeyError("the model {} you specified is not supported. You are welcome to add it and open a PR :)")
 
+    print(f"tokenizer class: {tokenizer_class}, model_type: {args.model_type}")
     tokenizer = tokenizer_class.from_pretrained(args.model_name_or_path)
     model = model_class.from_pretrained(args.model_name_or_path)
     model.to(args.device)
@@ -418,8 +419,7 @@ def main():
             print(max_length)
             if args.method == "sample":
                 output_sequences = model.generate(
-                    eos_token_id=32774,
-                    pad_token_id=0,
+                    eos_token_id=tokenizer.eos_token_id,
                     input_ids=input_ids,
                     section_ids=None,
                     cl_feats=cl_feats, # .to(args.device),
