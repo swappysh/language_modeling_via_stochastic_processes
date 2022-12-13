@@ -1434,6 +1434,7 @@ class CodeParrotDataset(TextDataset):
         self.lengths = defaultdict(lambda: [])
         self.section_idx_offset = 1
         self.special_words = special_words
+        self.start_idx, self.end_idx = 0, 700
 
         # string form of id's
         self.section_names = self.special_words[:-1]
