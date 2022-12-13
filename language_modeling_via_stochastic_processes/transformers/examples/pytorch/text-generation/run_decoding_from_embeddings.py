@@ -415,8 +415,11 @@ def main():
             if args.no_eos:
                 max_length = 1024
 
+            print(max_length)
             if args.method == "sample":
                 output_sequences = model.generate(
+                    eos_token_id=32774,
+                    pad_token_id=0,
                     input_ids=input_ids,
                     section_ids=None,
                     cl_feats=cl_feats, # .to(args.device),
