@@ -1509,9 +1509,11 @@ class CodeParrotDataset(TextDataset):
                 row = f"{self.tokenizer.bos_token} {gpt2_text} {self.tokenizer.eos_token}"
                 tokenized_text = self.tokenizer.convert_tokens_to_ids(
                     self.tokenizer.tokenize(row))
+                print(f"len(tokenized_text), self.block_size, {len(tokenized_text), self.block_size}")
                 if len(tokenized_text) >= self.block_size:
                     num_filtered += 1
                 else:
+                    print("appending to examples")
                     example = self.tokenizer.build_inputs_with_special_tokens(tokenized_text)
                     self.examples.append(example)
                     self.cl_texts.append(gpt2_text)
