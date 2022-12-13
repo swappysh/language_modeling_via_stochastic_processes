@@ -50,6 +50,7 @@ from transformers import (
     RecipeDataset,
     TaskmasterDataset,
     WikihowDataset,
+    CodeParrotDataset,
     GPT2TimeLMHeadModel,
 )
 
@@ -328,7 +329,7 @@ def load_cl_model(filepath, latent_dim, base_model, use_section_ids,
     if use_section_ids:
         model.model.resize_token_embeddings(token_size)
 
-    transformers.__spec__ = 'gpt2' # Avoid bug
+    transformers.__spec__ = 'codeparrot/codeparrot' # Avoid bug
     state_dict = torch.load(filepath)
     new_dict = {}
     for k, v in state_dict['state_dict'].items():
@@ -358,7 +359,7 @@ def load_cl_model(filepath, latent_dim, base_model, use_section_ids,
     model.eval()
     return model
 
-def get_checkpoint(dataset_name, latent_dim, base_model="gpt2",
+def get_checkpoint(dataset_name, latent_dim, base_model="codeparrot/codeparrot",
                    sec_id=False, token_size=None,
                    filepath=None):
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
@@ -394,6 +395,9 @@ def get_special_tokens(dataset_name, tokenizer, add_tokens=True):
             '[ METHOD ]',
             '[ STEP ]'
         ]
+    if 'codeparrot' in dataset_name:
+        SECTION_IDS = ['[ QUESTION ]', '[ SOLUTION ]', '[ CLASS_STATEMENT ]',
+                       '[ DEF_STATEMENT ]', '[ IMPORT_STATEMENT ]']
     SECTION_IDS += [' . ']
     if add_tokens:
         # NOTE loading previous tokenizer sometimes already includes the new tokens
@@ -503,7 +507,7 @@ def main():
         "revision": model_args.model_revision,
         "use_auth_token": True if model_args.use_auth_token else None,
     }
-    tokenizer = AutoTokenizer.from_pretrained('gpt2', **tokenizer_kwargs)
+    tokenizer = AutoTokenizer.from_pretrained('codeparrot/codeparrot', **tokenizer_kwargs)
     tokenizer.pad_token = tokenizer.eos_token
 
     SECTION_IDS, SPECIAL_TOKENS, tokenizer = get_special_tokens(
@@ -533,7 +537,7 @@ def main():
 
     # Getting checkpoint dict:
     cpu_device = torch.device('cpu')
-    base_model = 'gpt2'
+    base_model = 'codeparrot/codeparrot'
     CL_MODEL = get_checkpoint(
         dataset_name=data_args.dataset_name,
         latent_dim=model_args.latent_dim,

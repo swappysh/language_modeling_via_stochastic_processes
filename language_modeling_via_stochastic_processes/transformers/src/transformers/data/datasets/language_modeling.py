@@ -34,13 +34,13 @@ from ...utils import logging
 from collections import defaultdict
 
 from transformers import (
-    GPT2Tokenizer,
+    GPT2Tokenizer, AutoTokenizer
 )
 
+from datasets import load_from_disk
 from language_modeling_via_stochastic_processes.src import constants
 
 logger = logging.get_logger(__name__)
-
 
 DEPRECATION_WARNING = (
     "This dataset will be removed from the library soon, preprocessing should be handled with the 🤗 Datasets "
@@ -54,12 +54,12 @@ class TextDataset(Dataset):
     """
 
     def __init__(
-        self,
-        tokenizer: PreTrainedTokenizer,
-        file_path: str,
-        block_size: int,
-        overwrite_cache=False,
-        cache_dir: Optional[str] = None,
+            self,
+            tokenizer: PreTrainedTokenizer,
+            file_path: str,
+            block_size: int,
+            overwrite_cache=False,
+            cache_dir: Optional[str] = None,
     ):
         warnings.warn(
             DEPRECATION_WARNING.format(
@@ -101,7 +101,7 @@ class TextDataset(Dataset):
 
                 for i in range(0, len(tokenized_text) - block_size + 1, block_size):  # Truncate in block of block_size
                     self.examples.append(
-                        tokenizer.build_inputs_with_special_tokens(tokenized_text[i : i + block_size])
+                        tokenizer.build_inputs_with_special_tokens(tokenized_text[i: i + block_size])
                     )
                 # Note that we are losing the last truncated example here for the sake of simplicity (no padding)
                 # If your dataset is small, first you should look for a bigger one :-) and second you
@@ -348,13 +348,13 @@ class TextDatasetForNextSentencePrediction(Dataset):
     """
 
     def __init__(
-        self,
-        tokenizer: PreTrainedTokenizer,
-        file_path: str,
-        block_size: int,
-        overwrite_cache=False,
-        short_seq_probability=0.1,
-        nsp_probability=0.5,
+            self,
+            tokenizer: PreTrainedTokenizer,
+            file_path: str,
+            block_size: int,
+            overwrite_cache=False,
+            short_seq_probability=0.1,
+            nsp_probability=0.5,
     ):
         warnings.warn(
             DEPRECATION_WARNING.format(
@@ -525,6 +525,7 @@ class TextDatasetForNextSentencePrediction(Dataset):
     def __getitem__(self, i):
         return self.examples[i]
 
+
 class WikisectionDataset(TextDataset):
     """
     This will be superseded by a framework-agnostic approach
@@ -542,11 +543,11 @@ class WikisectionDataset(TextDataset):
                  cache_dir: Optional[str] = None,
                  ):
         super(WikisectionDataset, self).__init__(
-                 tokenizer=tokenizer,
-                 file_path=file_path,
-                 block_size=block_size,
-                 overwrite_cache=overwrite_cache,
-                 cache_dir=cache_dir,
+            tokenizer=tokenizer,
+            file_path=file_path,
+            block_size=block_size,
+            overwrite_cache=overwrite_cache,
+            cache_dir=cache_dir,
         )
 
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
@@ -582,13 +583,13 @@ class WikisectionDataset(TextDataset):
         section_tokens = self.tokenizer(self.section_names)['input_ids']
         self.section_tokens = [tok[0] for tok in section_tokens]
         self.cl_eos_id = self.tokenizer(self.cl_eos_str)['input_ids'][0]
-        assert self.cl_eos_id > 50000 # just checking its a new token
+        assert self.cl_eos_id > 50000  # just checking its a new token
 
         self.set_cl_tokenizer()
         start = time.time()
         self.process_dataset()
         end = time.time()
-        print("Processing dataset took {}".format(end-start))
+        print("Processing dataset took {}".format(end - start))
 
     def process_dataset(self):
         with open(self.file_path, encoding="utf-8") as f:
@@ -597,8 +598,8 @@ class WikisectionDataset(TextDataset):
                     # Text used for CL embeddings.
                     cl_text = self._clean2cltext(row)
                     # Text for GPT2
-                    row = row.strip() # NOTE: remove break line
-                    row = row.replace(". ", " . ") # NOTE marking end of sentence
+                    row = row.strip()  # NOTE: remove break line
+                    row = row.replace(". ", " . ")  # NOTE marking end of sentence
                     row = f"{self.tokenizer.bos_token} {row} {self.tokenizer.eos_token}"
                     tokenized_text = self.tokenizer.convert_tokens_to_ids(
                         self.tokenizer.tokenize(row))
@@ -619,13 +620,12 @@ class WikisectionDataset(TextDataset):
                                                 raw_text=self.raw_texts[-1],
                                                 cl_text=self.cl_texts[-1])
                         if len(self.examples) > 1422:
-                            break # same length as toy wikisection
+                            break  # same length as toy wikisection
 
         self.labels = copy.deepcopy(self.examples)
         print(f"big: {self.n_big} vs small: {self.n_small}")
         for k, v in self.lengths.items():
-            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v)/np.sqrt(len(v) )))
-
+            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) / np.sqrt(len(v))))
 
     def set_cl_tokenizer(self):
         self.cl_tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -640,12 +640,11 @@ class WikisectionDataset(TextDataset):
         )
         input_ids = output['input_ids'].squeeze(0)
         attention_mask = output['attention_mask'].squeeze(0)
-        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id]*input_ids.shape[0]])
-        eos_attention = torch.tensor([[0]*input_ids.shape[0]])
+        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id] * input_ids.shape[0]])
+        eos_attention = torch.tensor([[0] * input_ids.shape[0]])
         input_ids = torch.cat((input_ids, eos_input_ids.T), dim=1)
         attention_mask = torch.cat((attention_mask, eos_attention.T), dim=1)
         return input_ids.to(device), attention_mask.to(device)
-
 
     def _full_section_ids(self, tokenized_text, last_section_id):
         """output an array \in [0, 3]"""
@@ -672,27 +671,27 @@ class WikisectionDataset(TextDataset):
         start_token_idx -= self.section_idx_offset
         start_token_idx = max(0, start_token_idx)
 
-        if start_tok != section_tokens[0]: # doesn't start with abstract
-            section_ids[:start_token_idx] = section_tokens.index(start_tok - 1) # \in [0, 3]
+        if start_tok != section_tokens[0]:  # doesn't start with abstract
+            section_ids[:start_token_idx] = section_tokens.index(start_tok - 1)  # \in [0, 3]
 
-        for next_tok in section_tokens[section_tokens.index(start_tok)+1:]:
+        for next_tok in section_tokens[section_tokens.index(start_tok) + 1:]:
             # if next_tok is not in text, then the rest is for start_tok
             if next_tok not in tokenized_text:
-                section_ids[start_token_idx:] = section_tokens.index(start_tok) # \in [0, 3]
+                section_ids[start_token_idx:] = section_tokens.index(start_tok)  # \in [0, 3]
                 break
             else:
                 # Handle off-by-one
                 next_tok_idx = tokenized_text.index(next_tok) - self.section_idx_offset
                 next_tok_idx = max(0, next_tok_idx)
-                section_ids[start_token_idx:next_tok_idx] = section_tokens.index(start_tok) # \in [0, 3]
+                section_ids[start_token_idx:next_tok_idx] = section_tokens.index(start_tok)  # \in [0, 3]
 
             self.lengths[self.section_names[section_tokens.index(start_tok)]].append(
                 next_tok_idx + 1 - start_token_idx)
             start_tok = next_tok
             start_token_idx = next_tok_idx
 
-        if start_tok == section_tokens[-1]: # end section, rest of text is this token
-            section_ids[start_token_idx:] = section_tokens.index(start_tok) # \in [0, 3]
+        if start_tok == section_tokens[-1]:  # end section, rest of text is this token
+            section_ids[start_token_idx:] = section_tokens.index(start_tok)  # \in [0, 3]
             self.lengths[self.section_names[section_tokens.index(start_tok)]].append(
                 len(section_ids) - start_token_idx)
 
@@ -715,7 +714,6 @@ class WikisectionDataset(TextDataset):
 
         return section_ids, last_section_id
 
-
     def _determine_section_ids(self, tokenized_text, last_section_id):
         if self.use_section_null:
             section_ids, last_section_id = self._null_section_id(tokenized_text, last_section_id)
@@ -734,7 +732,7 @@ class WikisectionDataset(TextDataset):
         return self.get_cl_embeddings(tokenized_example, gpt2_text, raw_text, cl_text)
 
     def get_end_points(self, tokenized_example):
-        eos_idxs = [i-1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
+        eos_idxs = [i - 1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
         eos_idxs += [len(tokenized_example)]
         return eos_idxs
 
@@ -746,7 +744,7 @@ class WikisectionDataset(TextDataset):
         split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
         assert len(eos_idxs) == len(split_sentences)
         cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
-        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask) # 1, feat_size
+        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
         # Align feats to the sentence length
         last_idx = 0
         for eos_idx, feat in zip(eos_idxs, cl_feats):
@@ -769,6 +767,7 @@ class WikisectionDataset(TextDataset):
                 torch.stack(self.cl_embeddings[i]).to(self.cpu_device),
                 self.cl_texts[i]
                 )
+
 
 class StoriesDataset(TextDataset):
     """
@@ -787,11 +786,11 @@ class StoriesDataset(TextDataset):
         from language_modeling_via_stochastic_processes.src import constants
         fpath = os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.train.txt")
         super(StoriesDataset, self).__init__(
-                 tokenizer=tokenizer,
-                 file_path=fpath,
-                 block_size=block_size,
-                 overwrite_cache=overwrite_cache,
-                 cache_dir=cache_dir,
+            tokenizer=tokenizer,
+            file_path=fpath,
+            block_size=block_size,
+            overwrite_cache=overwrite_cache,
+            cache_dir=cache_dir,
         )
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cpu_device = torch.device('cpu')
@@ -806,7 +805,7 @@ class StoriesDataset(TextDataset):
         self.section_ids = []
         self.cl_embeddings = []
         self.special_words = special_words
-        self.cl_offset=0
+        self.cl_offset = 0
 
         import sys
         sys.path.append("/nlp/scr/rewang/ilm")
@@ -814,12 +813,12 @@ class StoriesDataset(TextDataset):
         self.cl_eos_str = self.special_words[-1]
         assert self.cl_eos_str == ' . '
         self.cl_eos_id = self.tokenizer(self.cl_eos_str)['input_ids'][0]
-        assert self.cl_eos_id > 50000 # just checking its a new token
+        assert self.cl_eos_id > 50000  # just checking its a new token
         self.set_cl_tokenizer()
         start = time.time()
         self.process_dataset()
         end = time.time()
-        print("Processing dataset took {}".format(end-start))
+        print("Processing dataset took {}".format(end - start))
 
     def set_cl_tokenizer(self):
         self.cl_tokenizer = GPT2Tokenizer.from_pretrained('gpt2')
@@ -835,8 +834,8 @@ class StoriesDataset(TextDataset):
         )
         input_ids = output['input_ids'].squeeze(0)
         attention_mask = output['attention_mask'].squeeze(0)
-        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id]*input_ids.shape[0]])
-        eos_attention = torch.tensor([[0]*input_ids.shape[0]])
+        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id] * input_ids.shape[0]])
+        eos_attention = torch.tensor([[0] * input_ids.shape[0]])
         input_ids = torch.cat((input_ids, eos_input_ids.T), dim=1)
         attention_mask = torch.cat((attention_mask, eos_attention.T), dim=1)
         return input_ids.to(device), attention_mask.to(device)
@@ -851,7 +850,7 @@ class StoriesDataset(TextDataset):
             story = [title] + text
             if len(story) <= 3:
                 continue
-            row  = self.cl_eos_str.join(story)
+            row = self.cl_eos_str.join(story)
             row = f"{self.tokenizer.bos_token} {row} {self.tokenizer.eos_token}"
             tokenized_text = self.tokenizer.convert_tokens_to_ids(
                 self.tokenizer.tokenize(row))
@@ -866,9 +865,9 @@ class StoriesDataset(TextDataset):
                 self.raw_texts.append(self.tokenizer.decode(self.examples[-1]))
                 self.cl_texts.append(row)
                 self.get_cl_embeddings(tokenized_example=example,
-                                        gpt2_text=row,
-                                        raw_text=self.raw_texts[-1],
-                                        cl_text=self.cl_texts[-1])
+                                       gpt2_text=row,
+                                       raw_text=self.raw_texts[-1],
+                                       cl_text=self.cl_texts[-1])
 
         self.labels = copy.deepcopy(self.examples)
         print("examples")
@@ -876,7 +875,7 @@ class StoriesDataset(TextDataset):
         print(self.cl_texts[-1])
 
     def get_end_points(self, tokenized_example):
-        eos_idxs = [i-1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
+        eos_idxs = [i - 1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
         eos_idxs += [len(tokenized_example)]
         return eos_idxs
 
@@ -888,7 +887,7 @@ class StoriesDataset(TextDataset):
         split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
         assert len(eos_idxs) == len(split_sentences)
         cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
-        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask) # 1, feat_size
+        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
         # Align feats to the sentence length
         last_idx = 0
         for eos_idx, feat in zip(eos_idxs, cl_feats):
@@ -912,6 +911,7 @@ class StoriesDataset(TextDataset):
                 self.cl_texts[i]
                 )
 
+
 class RecipeDataset(TextDataset):
     """
     This will be superseded by a framework-agnostic approach
@@ -924,26 +924,26 @@ class RecipeDataset(TextDataset):
                  file_path: str,
                  block_size: int,
                  use_section_null: bool,
-                 special_words:list,
+                 special_words: list,
                  data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
                  overwrite_cache=False,
                  cache_dir: Optional[str] = None,
                  name: str = 'recipe'
                  ):
         super(RecipeDataset, self).__init__(
-                 tokenizer=tokenizer,
-                 file_path=file_path,
-                 block_size=block_size,
-                 overwrite_cache=overwrite_cache,
-                 cache_dir=cache_dir,
+            tokenizer=tokenizer,
+            file_path=file_path,
+            block_size=block_size,
+            overwrite_cache=overwrite_cache,
+            cache_dir=cache_dir,
         )
 
         self.cpu_device = torch.device('cpu')
         self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
         self.cl_model = cl_model
         self.lengths = defaultdict(lambda: [])
-        self.special_words= special_words
-        assert self.special_words # should not be emtpy
+        self.special_words = special_words
+        assert self.special_words  # should not be emtpy
         self.special_tokens = [_[0] for _ in tokenizer(self.special_words)['input_ids']]
         self.file_path = file_path
         self.data_dir = data_dir
@@ -970,7 +970,7 @@ class RecipeDataset(TextDataset):
         section_tokens = self.tokenizer(self.section_names)['input_ids']
         self.section_tokens = [tok[0] for tok in section_tokens]
         self.cl_eos_id = self.tokenizer(self.cl_eos_str)['input_ids'][0]
-        assert self.cl_eos_id > 50000 # just checking its a new token
+        assert self.cl_eos_id > 50000  # just checking its a new token
 
         self._process_dataset()
 
@@ -988,8 +988,8 @@ class RecipeDataset(TextDataset):
         )
         input_ids = output['input_ids'].squeeze(0)
         attention_mask = output['attention_mask'].squeeze(0)
-        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id]*input_ids.shape[0]])
-        eos_attention = torch.tensor([[0]*input_ids.shape[0]])
+        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id] * input_ids.shape[0]])
+        eos_attention = torch.tensor([[0] * input_ids.shape[0]])
         input_ids = torch.cat((input_ids, eos_input_ids.T), dim=1)
         attention_mask = torch.cat((attention_mask, eos_attention.T), dim=1)
         return input_ids.to(device), attention_mask.to(device)
@@ -1012,12 +1012,12 @@ class RecipeDataset(TextDataset):
             directions = [d[:-1] + " . " for d in doc['directions']]
             # Text used for CL embeddings
             all_sentences = title + ingredients + directions
-            all_sentences = [s for s in all_sentences if s] # make sure sentences are not empty
+            all_sentences = [s for s in all_sentences if s]  # make sure sentences are not empty
             cl_text = "".join(all_sentences)
             # Text for GPT2
             gpt2_text = ([self.special_words[0] + " "] + title
-                         + [self.special_words[1] + " "]  + ingredients
-                         + [self.special_words[2] + " "]  + directions)
+                         + [self.special_words[1] + " "] + ingredients
+                         + [self.special_words[2] + " "] + directions)
             gpt2_text = [s for s in gpt2_text if s]
             gpt2_text = "".join(gpt2_text)
 
@@ -1026,7 +1026,7 @@ class RecipeDataset(TextDataset):
                 self.tokenizer.tokenize(row))
 
             if len(tokenized_text) >= self.block_size:
-                num_filtered+=1
+                num_filtered += 1
             else:
                 self.examples.append(self.tokenizer.build_inputs_with_special_tokens(tokenized_text))
                 self.cl_texts.append(cl_text)
@@ -1045,10 +1045,10 @@ class RecipeDataset(TextDataset):
         print(f"num filtered {num_filtered}")
         print("Lengths")
         for k, v in self.lengths.items():
-            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) ))
+            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v)))
 
     def get_end_points(self, tokenized_example):
-        eos_idxs = [i-1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
+        eos_idxs = [i - 1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
         eos_idxs += [len(tokenized_example)]
         return eos_idxs
 
@@ -1060,7 +1060,7 @@ class RecipeDataset(TextDataset):
         split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
         assert len(eos_idxs) == len(split_sentences)
         cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
-        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask) # 1, feat_size
+        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
         # Align feats to the sentence length
         last_idx = 0
         for eos_idx, feat in zip(eos_idxs, cl_feats):
@@ -1081,7 +1081,6 @@ class RecipeDataset(TextDataset):
     def __len__(self):
         return len(self.examples)
 
-
     def __getitem__(self, i):
         return (torch.tensor(self.examples[i], dtype=torch.long),
                 torch.tensor(self.labels[i], dtype=torch.long),
@@ -1097,7 +1096,7 @@ class RecipeDataset(TextDataset):
 
         start_idx = 0
         cur_tok = section_tokens[0]
-        for tok in section_tokens[1:]: # skip abstract - always first and present
+        for tok in section_tokens[1:]:  # skip abstract - always first and present
             if tok in tokenized_text:
                 end_idx = tokenized_text.index(tok) - 1
                 section_ids[start_idx:end_idx] = section_tokens.index(cur_tok)
@@ -1127,7 +1126,6 @@ class RecipeDataset(TextDataset):
                 last_section_id = section_id
         return section_ids, last_section_id
 
-
     def _determine_section_ids(self, tokenized_text, last_section_id):
         if self.use_section_null:
             section_ids, last_section_id = self._null_section_id(tokenized_text, last_section_id)
@@ -1148,7 +1146,7 @@ class TaskmasterDataset(RecipeDataset):
                  file_path: str,
                  block_size: int,
                  use_section_null: bool,
-                 special_words:list,
+                 special_words: list,
                  data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
                  overwrite_cache=False,
                  cache_dir: Optional[str] = None,
@@ -1157,16 +1155,16 @@ class TaskmasterDataset(RecipeDataset):
         self.name = name
         self.train = True if 'train' in file_path else False
         super(TaskmasterDataset, self).__init__(
-                cl_model=cl_model,
-                 tokenizer=tokenizer,
-                 file_path=file_path,
-                 block_size=block_size,
-                 use_section_null=use_section_null,
-                 special_words=special_words,
-                 data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
-                 overwrite_cache=False,
-                 cache_dir=cache_dir,
-                name=name
+            cl_model=cl_model,
+            tokenizer=tokenizer,
+            file_path=file_path,
+            block_size=block_size,
+            use_section_null=use_section_null,
+            special_words=special_words,
+            data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
+            overwrite_cache=False,
+            cache_dir=cache_dir,
+            name=name
         )
 
     def _set_indices(self):
@@ -1174,7 +1172,7 @@ class TaskmasterDataset(RecipeDataset):
             print('LOADING RESTAURANT TM')
             self.data_dir = constants.PATH2TM2
             if self.train:
-                self.data_files = ['restaurant-search.json'] # 3276 conversations
+                self.data_files = ['restaurant-search.json']  # 3276 conversations
                 self.start_conversation = 0
                 self.end_conversation = 2000
             else:
@@ -1211,7 +1209,7 @@ class TaskmasterDataset(RecipeDataset):
                 tokenized_text = self.tokenizer.convert_tokens_to_ids(
                     self.tokenizer.tokenize(row))
                 if len(tokenized_text) >= self.block_size:
-                    num_filtered+=1
+                    num_filtered += 1
                 else:
                     example = self.tokenizer.build_inputs_with_special_tokens(tokenized_text)
                     self.examples.append(example)
@@ -1228,7 +1226,7 @@ class TaskmasterDataset(RecipeDataset):
         print(f"num filtered {num_filtered}")
         print("Lengths")
         for k, v in self.lengths.items():
-            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v)/np.sqrt(len(v))))
+            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) / np.sqrt(len(v))))
 
         print("examples")
         print(self.raw_texts[0])
@@ -1237,7 +1235,7 @@ class TaskmasterDataset(RecipeDataset):
     def get_end_points(self, tokenized_example):
         eos_idxs = []
         for tok in self.special_tokens[:2]:
-            eos_idxs += [i-1 for i, x in enumerate(tokenized_example) if x == tok]
+            eos_idxs += [i - 1 for i, x in enumerate(tokenized_example) if x == tok]
         eos_idxs += [len(tokenized_example)]
         eos_idxs.sort()
         eos_idxs = eos_idxs[1:]
@@ -1252,7 +1250,7 @@ class TaskmasterDataset(RecipeDataset):
 
         cl_input_ids, cl_attention_mask = self.cl_tokenize(cl_text, self.device)
         cl_feats = self.cl_model.forward(
-            input_ids=cl_input_ids, attention_mask=cl_attention_mask) # 1, feat_size
+            input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
         # Align feats to the sentence length
         last_idx = 0
         for eos_idx, feat in zip(eos_idxs, cl_feats):
@@ -1278,7 +1276,7 @@ class WikihowDataset(RecipeDataset):
                  file_path: str,
                  block_size: int,
                  use_section_null: bool,
-                 special_words:list,
+                 special_words: list,
                  data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
                  overwrite_cache=False,
                  cache_dir: Optional[str] = None,
@@ -1286,15 +1284,15 @@ class WikihowDataset(RecipeDataset):
                  ):
         super(WikihowDataset, self).__init__(
             cl_model,
-                 tokenizer=tokenizer,
-                 file_path=file_path,
-                 block_size=block_size,
-                 use_section_null=use_section_null,
-                 special_words=special_words,
-                 data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
-                 overwrite_cache=False,
-                 cache_dir=cache_dir,
-                name=name
+            tokenizer=tokenizer,
+            file_path=file_path,
+            block_size=block_size,
+            use_section_null=use_section_null,
+            special_words=special_words,
+            data_dir=os.path.join(constants.PATH2RECIPENLG, 'dataset'),
+            overwrite_cache=False,
+            cache_dir=cache_dir,
+            name=name
         )
 
     def _set_indices(self):
@@ -1305,7 +1303,7 @@ class WikihowDataset(RecipeDataset):
             self.start_idx, self.end_idx = 40_000, 40_100
 
     def _process_dataset(self):
-        self.data_name ="/nlp/scr/rewang/data/wiki_how_data.pkl"
+        self.data_name = "/nlp/scr/rewang/data/wiki_how_data.pkl"
         with open(self.data_name, 'rb') as f:
             self.all_dataset = pickle.load(f)
 
@@ -1327,10 +1325,10 @@ class WikihowDataset(RecipeDataset):
                 sentence_counter = 0
                 # Put all the document sentences together.
                 gpt2_text = [self.special_words[0] + " " + doc['title'] + " . "]
-                gpt2_text += [self.special_words[1] + " " +  method_name + " . "]
+                gpt2_text += [self.special_words[1] + " " + method_name + " . "]
                 for step_num, step in enumerate(steps):
-                    gpt2_directions = [ f"{self.special_words[2]} {step_num} "
-                                  + step['summary'][:-1] + " . "]
+                    gpt2_directions = [f"{self.special_words[2]} {step_num} "
+                                       + step['summary'][:-1] + " . "]
                     sentences = [_ + " . " for _ in step['text'].split(split_pattern)]
                     if sentences[-1].endswith(". . "):
                         sentences[-1] = sentences[-1].replace('. . ', ' . ')
@@ -1344,15 +1342,16 @@ class WikihowDataset(RecipeDataset):
                 tokenized_text = self.tokenizer.convert_tokens_to_ids(
                     self.tokenizer.tokenize(row))
                 if len(tokenized_text) >= self.block_size:
-                    num_filtered+=1
+                    num_filtered += 1
                 else:
                     example = self.tokenizer.build_inputs_with_special_tokens(tokenized_text)
                     self.examples.append(example)
                     self.cl_texts.append(gpt2_text)
                     section_ids, _ = self._determine_section_ids(tokenized_text, last_section_id=None)
                     self.lengths['per [ STEP ]'].append(
-                        self.lengths['[ STEP ]'][-1]/(tokenized_text.count(50259)))
-                    self.get_cl_embeddings(tokenized_example=example, raw_text=gpt2_text, cl_text=gpt2_list, gpt2_text=row)
+                        self.lengths['[ STEP ]'][-1] / (tokenized_text.count(50259)))
+                    self.get_cl_embeddings(tokenized_example=example, raw_text=gpt2_text, cl_text=gpt2_list,
+                                           gpt2_text=row)
 
                     self.section_ids.append(section_ids)
                     self.raw_texts.append(row)
@@ -1362,10 +1361,10 @@ class WikihowDataset(RecipeDataset):
         print(f"num filtered {num_filtered}")
         print("Lengths")
         for k, v in self.lengths.items():
-            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) ))
+            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v)))
 
     def get_end_points(self, tokenized_example):
-        eos_idxs = [i-1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
+        eos_idxs = [i - 1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
         eos_idxs += [len(tokenized_example)]
         return eos_idxs
 
@@ -1377,7 +1376,7 @@ class WikihowDataset(RecipeDataset):
         split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
         assert len(eos_idxs) == len(split_sentences)
         cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
-        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask) # 1, feat_size
+        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
         # Align feats to the sentence length
         last_idx = 0
         for eos_idx, feat in zip(eos_idxs, cl_feats):
@@ -1390,3 +1389,240 @@ class WikihowDataset(RecipeDataset):
             cl_embeddings = cl_embeddings[self.cl_offset:] + [cl_embeddings[-1]] * self.cl_offset
         self.cl_embeddings.append(cl_embeddings)
 
+
+class CodeParrotDataset(TextDataset):
+    """
+    This will be superseded by a framework-agnostic approach
+    soon.
+    """
+
+    def __init__(self,
+                 cl_model,
+                 tokenizer: PreTrainedTokenizer,
+                 file_path: str,
+                 block_size: int,
+                 special_words: list,
+                 use_section_null: bool,
+                 overwrite_cache=False,
+                 cache_dir: Optional[str] = None,
+                 ):
+        super(CodeParrotDataset, self).__init__(
+            tokenizer=tokenizer,
+            file_path=file_path,
+            block_size=block_size,
+            overwrite_cache=overwrite_cache,
+            cache_dir=cache_dir,
+        )
+
+        self.device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+        self.cl_model = cl_model
+        self.use_section_null = use_section_null
+        self.file_path = file_path
+        self.tokenizer = tokenizer
+        self.block_size = block_size
+        self.train = 'train' in self.file_path
+
+        self.examples = []
+        self.raw_texts = []
+        self.cl_texts = []
+        self.section_ids = []
+        self.cl_embeddings = []
+        self.n_big = 0
+        self.n_small = 0
+        self.cpu_device = torch.device('cpu')
+        self.cl_offset = 0
+        self.lengths = defaultdict(lambda: [])
+        self.section_idx_offset = 1
+        self.special_words = special_words
+
+        # string form of id's
+        self.section_names_old = ['question', 'solution', 'class_statement', 'def_statement', 'import_statement']
+        self.section_ids_old = ['[ {} ]'.format(name.upper()) for name in self.section_names]
+        self.map = {'class': 'class_statement', 'def': "def_statement",
+                    'import': 'import_statement'}
+        self.section_names = self.special_words[:-1]
+        self.cl_eos_str = self.special_words[-1]
+        assert self.cl_eos_str == ' . '
+        # id token
+        section_tokens = self.tokenizer(self.section_names)['input_ids']
+        self.section_tokens = [tok[0] for tok in section_tokens]
+        self.cl_eos_id = self.tokenizer(self.cl_eos_str)['input_ids'][0]
+        assert self.cl_eos_id > 50000  # just checking its a new token
+
+        self.set_cl_tokenizer()
+        start = time.time()
+        self.process_dataset()
+        end = time.time()
+        print("Processing dataset took {}".format(end - start))
+
+    def _set_indices(self):
+        # SEE REPO <NONSTATIONARITY> FOR INDEXES
+        if self.train:
+            self.start_idx, self.end_idx = 0, 700
+        else:
+            self.start_idx, self.end_idx = 40_000, 40_100
+
+    def process_dataset(self):
+        self.data = load_from_disk(self.file_path)
+
+        num_filtered = 0
+
+        self.processed_data = []
+        split_pattern = ".  "
+        for doc_id in tqdm(range(self.start_idx, self.end_idx)):
+            doc_info = []
+            sentence_counter = 0
+
+            question = self.data[doc_id]['question'].replace(".\n", ". ").split(split_pattern)[:-1]
+            if len(question) == 0:
+                question = [self.data[doc_id]['question']]
+            question[0] = self.section_ids_old[0] + " " + question[0]
+            question = [_ + ' . ' for _ in question]
+
+            solutions = self.data[doc_id]['labelled_solutions']
+
+            all_sentences = question
+            for solution_id, solution in enumerate(solutions):
+                text = [f"{self.section_ids_old[1]} {solution_id}" + " . "]
+                for line in solution:
+                    section_map = line[0]
+                    if line[0] in self.map:
+                        section_map = self.map[line[0]]
+                    if section_map in self.section_names_old:
+                        section_id = self.section_names_old.index(section_map)
+                        text += [self.section_ids_old[section_id] + " " + line[1] + " . "]
+                    else:
+                        text += [line[1] + " . "]
+                all_sentences += text
+
+                # removing any empty sentences
+                gpt2_list = [s for s in all_sentences if s]
+                gpt2_text = "".join(gpt2_list)
+
+                row = f"{self.tokenizer.bos_token} {gpt2_text} {self.tokenizer.eos_token}"
+                tokenized_text = self.tokenizer.convert_tokens_to_ids(
+                    self.tokenizer.tokenize(row))
+                if len(tokenized_text) >= self.block_size:
+                    num_filtered += 1
+                else:
+                    example = self.tokenizer.build_inputs_with_special_tokens(tokenized_text)
+                    self.examples.append(example)
+                    self.cl_texts.append(gpt2_text)
+                    section_ids, _ = self.determine_section_ids(tokenized_text, last_section_id=None)
+                    self.lengths['per [ STEP ]'].append(
+                        self.lengths['[ STEP ]'][-1] / (tokenized_text.count(50259)))
+                    self.get_cl_embeddings(tokenized_example=example, raw_text=gpt2_text, cl_text=gpt2_list,
+                                           gpt2_text=row)
+
+                    self.section_ids.append(section_ids)
+                    self.raw_texts.append(row)
+
+        self.labels = copy.deepcopy(self.examples)
+        print(f"big: {self.n_big} vs small: {self.n_small}")
+        for k, v in self.lengths.items():
+            print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) / np.sqrt(len(v))))
+
+    def set_cl_tokenizer(self):
+        self.cl_tokenizer = AutoTokenizer.from_pretrained('codeparrot/codeparrot')
+        self.cl_tokenizer.pad_token = self.cl_tokenizer.eos_token
+        self.cl_tokenizer.add_tokens(self.section_names)
+
+    # TODO: Is this correct for codeparrot
+    def cl_tokenize(self, text, device):
+        output = self.cl_tokenizer(
+            text,
+            padding=True,
+            return_tensors='pt',
+        )
+        input_ids = output['input_ids'].squeeze(0)
+        attention_mask = output['attention_mask'].squeeze(0)
+        eos_input_ids = torch.tensor([[self.cl_tokenizer.eos_token_id] * input_ids.shape[0]])
+        eos_attention = torch.tensor([[0] * input_ids.shape[0]])
+        input_ids = torch.cat((input_ids, eos_input_ids.T), dim=1)
+        attention_mask = torch.cat((attention_mask, eos_attention.T), dim=1)
+        return input_ids.to(device), attention_mask.to(device)
+
+    def full_section_ids(self, tokenized_text, last_section_id):
+        """output an array \in [0, 3]"""
+        section_ids = np.zeros(len(tokenized_text))
+        section_tokens = self.tokenizer(self.section_names)['input_ids']
+        section_tokens = [tok[0] for tok in section_tokens]
+
+        start_idx = 0
+        cur_tok = section_tokens[0]
+        for tok in section_tokens[1:]:  # skip abstract - always first and present
+            if tok in tokenized_text:
+                end_idx = tokenized_text.index(tok) - 1
+                section_ids[start_idx:end_idx] = section_tokens.index(cur_tok)
+                # Track length
+                self.lengths[self.special_words[section_tokens.index(cur_tok)]].append(
+                    end_idx + 1 - start_idx)
+                # Update to next token
+                cur_tok = tok
+                start_idx = end_idx
+        section_ids[start_idx:] = section_tokens.index(cur_tok)
+        # Track length
+        self.lengths[self.special_words[section_tokens.index(cur_tok)]].append(
+            len(tokenized_text) - start_idx)
+        last_section_id = cur_tok
+        return section_ids, last_section_id
+
+    def null_section_id(self, tokenized_text, last_section_id):
+        """output an array \in [0, 4] where 4 = null"""
+        section_tokens = self.tokenizer(self.section_names)['input_ids']
+        section_tokens = [tok[0] for tok in section_tokens]
+        NULL_ID = len(section_tokens)
+        section_ids = np.ones(len(tokenized_text)) * NULL_ID
+
+        for section_id, section_tok in enumerate(section_tokens):
+            if section_tok in tokenized_text:
+                tok_idx = tokenized_text.index(section_tok) - self.section_idx_offset
+                tok_idx = max(0, tok_idx)
+                section_ids[tok_idx] = section_id
+                last_section_id = section_id
+
+        return section_ids, last_section_id
+
+    def determine_section_ids(self, tokenized_text, last_section_id):
+        if self.use_section_null:
+            section_ids, last_section_id = self.null_section_id(tokenized_text, last_section_id)
+        else:
+            section_ids, last_section_id = self.full_section_ids(tokenized_text, last_section_id)
+        return section_ids, last_section_id
+
+    def get_end_points(self, tokenized_example):
+        eos_idxs = [i - 1 for i, x in enumerate(tokenized_example) if x == self.cl_eos_id]
+        eos_idxs += [len(tokenized_example)]
+        return eos_idxs
+
+    def get_cl_embeddings(self, tokenized_example, gpt2_text, raw_text, cl_text):
+        split_pattern = " . "
+        cl_embeddings = []
+        eos_idxs = self.get_end_points(tokenized_example)
+        split_sentences = gpt2_text.split(split_pattern)
+        split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
+        assert len(eos_idxs) == len(split_sentences)
+        cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
+        cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
+        # Align feats to the sentence length
+        last_idx = 0
+        for eos_idx, feat in zip(eos_idxs, cl_feats):
+            cl_embeddings += [feat] * (eos_idx - last_idx)
+            last_idx = eos_idx
+
+        assert len(cl_embeddings) == len(tokenized_example)
+
+        if self.cl_offset:
+            cl_embeddings = cl_embeddings[self.cl_offset:] + [cl_embeddings[-1]] * self.cl_offset
+        self.cl_embeddings.append(cl_embeddings)
+
+    def __len__(self):
+        return len(self.examples)
+
+    def __getitem__(self, i):
+        return (torch.tensor(self.examples[i], dtype=torch.long),
+                torch.tensor(self.labels[i], dtype=torch.long),
+                torch.tensor(self.section_ids[i], dtype=torch.long),
+                torch.stack(self.cl_embeddings[i]).to(self.cpu_device),
+                self.cl_texts[i]
+                )

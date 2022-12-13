@@ -467,6 +467,7 @@ if is_torch_available():
         "RecipeDataset",
         "TaskmasterDataset",
         "WikihowDataset",
+        "CodeParrotDataset"
     ]
     _import_structure["generation_beam_search"] = ["BeamScorer", "BeamSearchScorer"]
     _import_structure["generation_logits_process"] = [
@@ -1993,6 +1994,7 @@ if TYPE_CHECKING:
             RecipeDataset,
             TaskmasterDataset,
             WikihowDataset,
+            CodeParrotDataset
         )
 
         from .generation_beam_search import BeamScorer, BeamSearchScorer
