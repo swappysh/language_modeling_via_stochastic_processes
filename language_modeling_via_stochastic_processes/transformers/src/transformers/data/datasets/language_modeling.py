@@ -1453,12 +1453,13 @@ class CodeParrotDataset(TextDataset):
         # assert self.cl_eos_id > 50000  # just checking its a new token
 
         self.set_cl_tokenizer()
+        self.set_indices()
         start = time.time()
         self.process_dataset()
         end = time.time()
         print("Processing dataset took {}".format(end - start))
 
-    def _set_indices(self):
+    def set_indices(self):
         # SEE REPO <NONSTATIONARITY> FOR INDEXES
         if self.train:
             self.start_idx, self.end_idx = 0, 700
