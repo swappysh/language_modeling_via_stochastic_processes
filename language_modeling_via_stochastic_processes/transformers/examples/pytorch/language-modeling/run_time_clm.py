@@ -521,9 +521,10 @@ def main():
 
     SECTION_IDS, SPECIAL_TOKENS, tokenizer = get_special_tokens(
         dataset_name=data_args.dataset_name, tokenizer=tokenizer)
-    # -1 because of the added " . "
+    # -1 because of the added " . "g
     config.max_num_sections = len(SECTION_IDS) - 1
 
+    print(f"model_args.model_name_or_path: {model_args.model_name_or_path}")
     if model_args.model_name_or_path:
         model = GPT2TimeLMHeadModel.from_pretrained(
             model_args.model_name_or_path,
