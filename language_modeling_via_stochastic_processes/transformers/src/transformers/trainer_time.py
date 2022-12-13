@@ -574,6 +574,11 @@ class Trainer_Time:
         else:
             if self.args.world_size <= 1:
                 if _is_torch_generator_available:
+                    print(f"self.train_dataset: {self.train_dataset}")
+                    try:
+                        print(f"len(self.train_dataset): {len(self.train_dataset)}")
+                    except:
+                        pass
                     return RandomSampler(self.train_dataset, generator=generator)
                 return RandomSampler(self.train_dataset)
             elif (

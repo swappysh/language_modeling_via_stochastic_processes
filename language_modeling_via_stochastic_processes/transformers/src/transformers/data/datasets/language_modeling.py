@@ -1464,7 +1464,7 @@ class CodeParrotDataset(TextDataset):
         if self.train:
             self.start_idx, self.end_idx = 0, 700
         else:
-            self.start_idx, self.end_idx = 4_000, 4_100
+            self.start_idx, self.end_idx = 0, 700
 
     def process_dataset(self):
         if self.train:

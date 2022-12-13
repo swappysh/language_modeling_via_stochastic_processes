@@ -293,6 +293,7 @@ def get_dataset(
             cl_model=cl_model
         )
     elif args.dataset_name == 'codeparrot':
+        print("getting codeparrot")
         dataset = CodeParrotDataset(
             tokenizer=tokenizer,
             file_path=file_path,
