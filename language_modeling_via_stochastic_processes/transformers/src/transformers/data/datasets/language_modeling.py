@@ -1529,6 +1529,8 @@ class CodeParrotDataset(TextDataset):
 
         self.labels = copy.deepcopy(self.examples)
         print(f"big: {self.n_big} vs small: {self.n_small}")
+        print(f"length of examples: {len(self.examples)}, {self.__len__()}")
+        print(f"get item: {self.__getitem__(0)}")
         for k, v in self.lengths.items():
             print("[ {} ] {}+-{}".format(k, np.mean(v), np.std(v) / np.sqrt(len(v))))
 

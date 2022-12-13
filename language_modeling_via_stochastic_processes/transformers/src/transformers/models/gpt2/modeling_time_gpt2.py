@@ -745,7 +745,7 @@ class GPT2TimeModel(GPT2PreTrainedModel):
             cl_embeds = cl_embeds.unsqueeze(0)
         else:
             if input_ids.shape[0] == 1:
-                cl_embeds = cl_embeds.expand(1, seq_len, 768)
+                cl_embeds = cl_embeds.expand(1, seq_len, 1600)
             else: # beam
                 cl_embeds = cl_embeds.unsqueeze(1)
 
