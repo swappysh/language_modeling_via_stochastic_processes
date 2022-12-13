@@ -29,5 +29,6 @@ from .language_modeling import (
     RecipeDataset,
     TaskmasterDataset,
     WikihowDataset,
+    CodeParrotDataset
 )
 from .squad import SquadDataset, SquadDataTrainingArguments

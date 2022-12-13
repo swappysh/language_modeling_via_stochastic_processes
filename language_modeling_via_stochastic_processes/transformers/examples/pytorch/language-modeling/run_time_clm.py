@@ -289,6 +289,15 @@ def get_dataset(
             block_size=args.block_size,
             cl_model=cl_model
         )
+    elif args.dataset_name == 'codeparrot':
+        dataset = CodeParrotDataset(
+            tokenizer=tokenizer,
+            file_path=file_path,
+            use_section_null=args.use_section_null,
+            special_words=special_words,
+            block_size=args.block_size,
+            cl_model=cl_model
+        )
     elif args.dataset_name == 'recipe':
         dataset = RecipeDataset(
             tokenizer=tokenizer,
