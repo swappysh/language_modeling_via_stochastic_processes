@@ -1013,7 +1013,7 @@ class GenerationMixin:
             )
 
             # sample
-            print(f"pad_token_id while sampling: {pad_token_id}, end of sentence token id:{eos_token_id}")
+            # print(f"pad_token_id while sampling: {pad_token_id}, end of sentence token id:{eos_token_id}")
             return self.sample(
                 input_ids,
                 logits_processor=logits_processor,
@@ -1543,7 +1543,7 @@ class GenerationMixin:
             next_token_logits = outputs.logits[:, -1, :]
 
             # pre-process distribution
-            print(f"pad toke while smapling: {pad_token_id}")
+            # print(f"pad toke while smapling: {pad_token_id}")
             next_token_scores = logits_processor(input_ids, next_token_logits)
             next_token_scores = logits_warper(input_ids, next_token_scores)
 
