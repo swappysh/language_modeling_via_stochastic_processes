@@ -1507,7 +1507,7 @@ class CodeParrotDataset(TextDataset):
                 gpt2_text = "".join(gpt2_list)
 
                 row = f"{self.tokenizer.bos_token} {gpt2_text} {self.tokenizer.eos_token}"
-                tokenized_text = self.cl_tokenizer.encode(row)
+                tokenized_text = self.cl_tokenizer.encode(row, max_length=self.block_size-1)
                 # tokenized_text = self.tokenizer.convert_tokens_to_ids(
                 #     self.tokenizer.tokenize(row))
                 print(f"len(tokenized_text), self.block_size, {len(tokenized_text), self.block_size}")
@@ -1610,7 +1610,7 @@ class CodeParrotDataset(TextDataset):
         cl_embeddings = []
         eos_idxs = self.get_end_points(tokenized_example)
         split_sentences = gpt2_text.split(split_pattern)
-        split_sentences = [_ + split_pattern for _ in split_sentences[:-1]] + [split_sentences[-1]]
+        split_sentences = [_ + split_pattern for _ in split_sentences[:-1]][:len(eos_idxs)-1] + [split_sentences[-1]]
         assert len(eos_idxs) == len(split_sentences)
         cl_input_ids, cl_attention_mask = self.cl_tokenize(split_sentences, self.device)
         cl_feats = self.cl_model.forward(input_ids=cl_input_ids, attention_mask=cl_attention_mask)  # 1, feat_size
