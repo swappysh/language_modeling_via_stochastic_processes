@@ -216,7 +216,7 @@ def main():
         dataset_name=args.dataset_name, tokenizer=tokenizer)
 
     model.transformer.special_tokens = SPECIAL_TOKENS
-    base_model = 'gpt2'
+    base_model = 'codeparrot/codeparrot'
     CL_MODEL = get_checkpoint(
         dataset_name=args.dataset_name,
         latent_dim=args.latent_dim,
