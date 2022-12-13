@@ -1436,13 +1436,14 @@ class CodeParrotDataset(TextDataset):
         self.special_words = special_words
 
         # string form of id's
+        self.section_names = self.special_words[:-1]
+        self.cl_eos_str = self.special_words[-1]
+        assert self.cl_eos_str == ' . '
         self.section_names_old = ['question', 'solution', 'class_statement', 'def_statement', 'import_statement']
         self.section_ids_old = ['[ {} ]'.format(name.upper()) for name in self.section_names]
         self.map = {'class': 'class_statement', 'def': "def_statement",
                     'import': 'import_statement'}
-        self.section_names = self.special_words[:-1]
-        self.cl_eos_str = self.special_words[-1]
-        assert self.cl_eos_str == ' . '
+        
         # id token
         section_tokens = self.tokenizer(self.section_names)['input_ids']
         self.section_tokens = [tok[0] for tok in section_tokens]
