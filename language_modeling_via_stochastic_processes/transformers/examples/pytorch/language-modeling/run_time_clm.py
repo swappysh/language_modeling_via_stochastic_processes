@@ -248,6 +248,9 @@ def get_data_paths(data_args: DataTrainingArguments):
     train_path = os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.train.txt")
     val_path = os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.val.txt")
     test_path =  os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.test.txt")
+    if "codeparrot" in data_args.dataset_name:
+        train_path = os.path.join(constants.PATH2CODEPARROT, "train")
+        test_path = os.path.join(constants.PATH2CODEPARROT, "test")
     if "roc_stories" in data_args.dataset_name:
         train_path = os.path.join(constants.PATH2ROCSTORIES, "train.pkl")
         val_path = os.path.join(constants.PATH2ROCSTORIES, "valid.pkl")
@@ -576,7 +579,7 @@ def main():
     data_args.block_size = block_size
     ### Data
     train_path, val_path, eval_path = get_data_paths(data_args)
-
+    print(f"train_path, val_path, eval_path: {train_path, val_path, eval_path}")
     train_dataset = get_dataset(
         args=data_args, tokenizer=tokenizer,
         file_path=train_path,
