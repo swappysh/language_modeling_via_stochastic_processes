@@ -31,6 +31,7 @@ import tqdm
 from transformers import (
     GPT2TimeLMHeadModel,
     GPT2Tokenizer,
+    AutoTokenizer
 )
 
 
@@ -54,6 +55,7 @@ MAX_LENGTH = int(10000)  # Hardcoded max length to avoid infinite loop
 
 MODEL_CLASSES = {
     "gpt2": (GPT2TimeLMHeadModel, GPT2Tokenizer),
+    "codeparrot": (GPT2TimeLMHeadModel, AutoTokenizer)
 }
 
 def set_seed(args):
