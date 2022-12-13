@@ -1467,7 +1467,10 @@ class CodeParrotDataset(TextDataset):
             self.start_idx, self.end_idx = 4_000, 4_100
 
     def process_dataset(self):
-        self.data = load_from_disk('/'.join(self.file_path.split('/')[:-2]) + '/code_parrot/train/')
+        if self.train:
+            self.data = load_from_disk('/'.join(self.file_path.split('/')[:-2]) + '/code_parrot/train/')
+        else:
+            self.data = load_from_disk('/'.join(self.file_path.split('/')[:-2]) + '/code_parrot/test/')
 
         num_filtered = 0
 
