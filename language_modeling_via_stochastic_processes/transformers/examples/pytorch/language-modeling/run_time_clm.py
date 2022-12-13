@@ -249,8 +249,8 @@ def get_data_paths(data_args: DataTrainingArguments):
     val_path = os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.val.txt")
     test_path =  os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.test.txt")
     if "codeparrot" in data_args.dataset_name:
-        train_path = os.path.join(constants.PATH2CODEPARROT, "train")
-        test_path = os.path.join(constants.PATH2CODEPARROT, "test")
+        train_path = os.path.join(constants.PATH2CODEPARROT, "train", "dataset.arrow")
+        test_path = os.path.join(constants.PATH2CODEPARROT, "test", "dataset.arrow")
     if "roc_stories" in data_args.dataset_name:
         train_path = os.path.join(constants.PATH2ROCSTORIES, "train.pkl")
         val_path = os.path.join(constants.PATH2ROCSTORIES, "valid.pkl")
