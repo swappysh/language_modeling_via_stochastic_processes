@@ -242,7 +242,7 @@ def get_data_paths(data_args: DataTrainingArguments):
 
     """
     assert data_args.dataset_name in [
-        'wikisection', 'roc_stories', 'wikihow', 'recipe', 'tm2', 'tickettalk']
+        'wikisection', 'roc_stories', 'wikihow', 'recipe', 'tm2', 'tickettalk', 'codeparrot']
     # Default datapaths
     from language_modeling_via_stochastic_processes.src import constants
     train_path = os.path.join(constants.PATH2WIKISECTION, "wikisection_withSections.train.txt")
